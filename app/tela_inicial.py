@@ -28,7 +28,7 @@ with st.container():
 
     with col1:
         current_dir = os.path.dirname(__file__)
-        img_path = os.path.join(current_dir, '/assets/logoIF.png')
+        img_path = os.path.join(current_dir, 'assets/logoIF.png')
         st.image(img_path, width=70)  
 
     with col2:
