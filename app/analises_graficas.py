@@ -145,11 +145,11 @@ def grafico_cursos_maior_evasão(df, modalidade_selecionada=None):
     fig.update_layout(
         margin=dict(t=60, l=0, r=0, b=120),  
         legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=-0.5,  
-            xanchor="center",
-            x=0.5
+            orientation="v",
+            yanchor="top",
+            y=0.5,  
+            xanchor="left",
+            x=1
         ),
         autosize=True,
         legend_title=dict(font=dict(size=10)),
