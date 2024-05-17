@@ -2,6 +2,7 @@ import analises_graficas as graphs
 import streamlit as st
 import pandas as pd
 import utils
+import os
 
 
 st.set_page_config(page_title='Analise Evasao Escolar', layout='wide')
