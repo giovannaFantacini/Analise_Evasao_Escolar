@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+import os
 @st.cache_data
 def carrega_dados():
     current_dir = os.path.dirname(__file__)
