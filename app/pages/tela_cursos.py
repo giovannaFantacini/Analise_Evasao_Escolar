@@ -32,7 +32,9 @@ with st.container():
     col1, col2 = st.columns([1, 12])  
 
     with col1:
-        st.image('./assets/logoIF.png', width=70)  
+        current_dir = os.path.dirname(__file__)
+        img_path = os.path.join(current_dir, '/assets/logoIF.png')
+        st.image(img_path, width=70)  
 
     with col2:
         st.title('Análise de Evasão Escolar')
