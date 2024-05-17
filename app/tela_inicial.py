@@ -1,18 +1,11 @@
 import analises_graficas as graphs
 import streamlit as st
 import pandas as pd
-
+import utils 
 
 st.set_page_config(page_title='Analise Evasao Escolar', layout='wide')
 
-#Armazena os dados no cache do navegador
-@st.cache_data
-def carrega_dados():
-    df_path = '../RelatorioAlunos2024Clear.xlsx'
-    df = pd.read_excel(df_path, header=0)
-    return df
-
-df = carrega_dados()
+df = utils.carrega_dados()
 
 # st.sidebar.title("Navegação")
 # if st.sidebar.button("Home"):
