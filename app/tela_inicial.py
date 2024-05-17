@@ -37,7 +37,6 @@ with st.container():
     st.write('\n\n\n\n')
 
 with st.container():
-    df = carrega_dados()
     ano_inicio, ano_fim = st.slider(
     "Selecione o intervalo de busca",
     min_value=int(df['Ano de Ingresso'].min()),  
