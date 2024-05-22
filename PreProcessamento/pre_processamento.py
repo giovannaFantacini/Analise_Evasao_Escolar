@@ -1,6 +1,5 @@
 # Import packages
 import pandas as pd
-from unidecode import unidecode
 
 def treat_file(df):
     

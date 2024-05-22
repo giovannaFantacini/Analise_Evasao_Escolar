@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import PreProcessamento.pre_processamento
-import utils
 import os
 import PreProcessamento
 
