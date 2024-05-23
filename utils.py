@@ -21,12 +21,14 @@ def carrega_dados(uploaded_file=None):
         # Se um arquivo foi carregado, use-o
         df = uploaded_file
     else:
-        # Diretório atual e caminho do arquivo de configuração
-        current_dir = os.path.dirname(__file__)
-        config_path = os.path.join(current_dir, 'config.txt')
+        # # Diretório atual e caminho do arquivo de configuração
+        # current_dir = os.path.dirname(__file__)
+        # config_path = os.path.join(current_dir, 'config.txt')
 
-        # Ler URL de configuração
-        url = ler_url(config_path)
+        # # Ler URL de configuração
+        # url = ler_url(config_path)
+
+        url = st.secrets["DB_URL"]
 
         # Conectar ao MongoDB
         client = MongoClient(url, server_api=ServerApi('1'))

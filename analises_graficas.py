@@ -403,7 +403,4 @@ def grafico_perfil_curso(df, value):
                  names=value, 
                  title=f'{value}',
                  color=value)
-    
-    fig.update_layout(title={'text': f'{value}', 'x': 0.5, 'xanchor': 'center'})
-    
     return fig
