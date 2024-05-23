@@ -7,6 +7,25 @@ import os
 
 st.set_page_config(page_title='Analise Evasao Escolar', layout='wide')
 
+button_style = """
+<style>
+    div.stButton > button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        border: none;
+        background: none;
+        color: inherit;
+        padding: 0;
+        font: inherit;
+        cursor: pointer;
+        outline: inherit;
+    }
+</style>
+"""
+
+st.markdown(button_style, unsafe_allow_html=True)
+
 if 'uploaded_df' in st.session_state:
     df_selecionado = st.session_state['uploaded_df']
     df = df_selecionado
