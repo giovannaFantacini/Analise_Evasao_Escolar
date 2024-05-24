@@ -1,5 +1,6 @@
 import plotly.express as px
 import pandas as pd
+from datetime import datetime
 
 cores_descricao_curso = {
     'Técnico Em Informática Integrado Ao Ensino Médio': '#4CAF50',  # Verde
@@ -403,4 +404,72 @@ def grafico_perfil_curso(df, value):
                  names=value, 
                  title=f'{value}',
                  color=value)
+    return fig
+
+def calcular_semestral_difference(ano_ingresso, ano_previsao_conclusao):
+    ano_atual = datetime.now().year
+    semestres_apos_conclusao = (ano_atual - ano_previsao_conclusao) * 2
+    return max(0, semestres_apos_conclusao)
+
+def grafico_tempo_extra_alunos(df):
+    # Adiciona uma coluna com a diferença em semestres para os alunos que ainda estão matriculados
+    df['Semestres Atrasados'] = df.apply(
+        lambda row: calcular_semestral_difference(row['Ano de Ingresso'], row['Ano Letivo de Previsão de Conclusão']) if row['Situação no Curso'] == 'Matriculado' else 0,
+        axis=1
+    )
+
+    # Filtra apenas os alunos atrasados
+    df_atrasados = df[df['Semestres Atrasados'] > 0]
+
+    # Conta o número de alunos por semestres atrasados
+    contagem_atrasos = df_atrasados['Semestres Atrasados'].value_counts().reset_index()
+    contagem_atrasos.columns = ['Semestres Atrasados', 'Número de Alunos']
+    contagem_atrasos = contagem_atrasos.sort_values(by='Semestres Atrasados')
+
+    # Cria o gráfico de barras usando Plotly Express
+    fig = px.bar(
+        contagem_atrasos,
+        x='Semestres Atrasados',
+        y='Número de Alunos',
+        title='Número de Alunos por Semestres Atrasados',
+        labels={'Semestres Atrasados': 'Semestres Atrasados', 'Número de Alunos': 'Número de Alunos'},
+        text='Número de Alunos'
+    )
+
+    return fig
+
+def deveria_ter_formado(ano_previsao_conclusao):
+    ano_atual = datetime.now().year
+    return ano_previsao_conclusao < ano_atual
+
+def grafico_pendencias(df):
+    df_pendentes = df[(df['Ano Letivo de Previsão de Conclusão'].apply(deveria_ter_formado)) & (df['Situação no Curso'] == 'Matriculado')]
+
+    # Colunas de pendências
+    pendencias = [
+        "Prática Profissional Pendente", "Atividades Complementares Pendente",
+        "Carga-Horária de TCC Pendente", "Carga-Horária de Prática Profissional Pendente", "Registro de TCC Pendente",
+        "Carga-Horária de Seminário Pendente", "Carga-Horária Eletiva Pendente", "Carga-Horária Optativa Pendente",
+        "Carga-Horária Obrigatória Pendente"
+    ]
+
+    for pendencia in pendencias:
+        df_pendentes = df_pendentes[df_pendentes[pendencia] != '-']
+
+    pendencias_contagem = df_pendentes[pendencias].apply(lambda x: (x == 'Sim').sum())
+
+    df_pendencias = pendencias_contagem.reset_index()
+    df_pendencias.columns = ['Pendência', 'Número de Alunos']
+    df_pendencias = df_pendencias[df_pendencias['Número de Alunos'] > 0]
+
+    # Cria o gráfico de pizza usando Plotly Express
+    fig = px.pie(
+        df_pendencias,
+        names='Pendência',
+        values='Número de Alunos',
+        title=f'Pendências dos Alunos Matriculados que Deveriam Ter Se Formado'
+    )
+
+    return fig
+
     return fig

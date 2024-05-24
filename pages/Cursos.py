@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 import utils as utils
 import os
+from datetime import datetime
 
 
 st.set_page_config(page_title='Analise Evasao Escolar', layout='wide')
@@ -120,6 +121,27 @@ with st.container():
     with col2:
         fig2 = graphs.grafico_barras_situacao_curso(df_filtrado, 'Ano de Ingresso', 'Matriculado', 'Total de Alunos Matriculados por Ano de Ingresso')
         st.plotly_chart(fig2, use_container_width=True)
+
+if df['Modalidade'].iloc[0] != "Técnico Integrado":
+    with st.container():
+        col1, col2 = st.columns([1, 1])
+
+        with col1:
+            fig1 = graphs.grafico_tempo_extra_alunos(df_filtrado)
+            st.plotly_chart(fig1, use_container_width=True)
+        
+        with col2:
+            ano_atual = datetime.now().year
+            option = st.selectbox(
+            "Selecione um ano de previsão de conclusão para ver as pendências dos alunos",
+            (sorted([ano for ano in df['Ano Letivo de Previsão de Conclusão'].unique() if ano < ano_atual])),
+            index=None)
+            if option != None:
+                df_filtra_ano = df[df['Ano Letivo de Previsão de Conclusão'] == option]
+            else: 
+                df_filtra_ano = df
+            fig2 = graphs.grafico_pendencias(df_filtra_ano)
+            st.plotly_chart(fig2, use_container_width=True)
 
 with st.container():
     df_filtrado = df[df['Situação no Curso'] == 'Matriculado']
