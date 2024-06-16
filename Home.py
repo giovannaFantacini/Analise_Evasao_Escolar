@@ -43,7 +43,7 @@ with st.container():
         st.plotly_chart(fig1, use_container_width=True)
     
     with col2:
-        fig2 = graphs.grafico_total_alunos_modalidade(df)
+        fig2 = graphs.grafico_total_alunos_modalidade(df, 'Evasão')
         st.plotly_chart(fig2, use_container_width=True)
 
 with st.container():
@@ -64,3 +64,37 @@ with st.container():
     with col2:
         fig2 = graphs.grafico_perfil_evasao(df_filtrado)
         st.plotly_chart(fig2, use_container_width=True)
+
+with st.container():
+    fig2 = graphs.grafico_total_alunos_modalidade(df)
+    st.plotly_chart(fig2, use_container_width=True)
+
+
+with st.container():
+    df_filtrado = df[df['Situação no Curso'] == 'Matriculado']
+    
+    # Título acima das colunas
+    st.markdown('### Perfil dos Alunos Matriculados na Instituição')
+
+    # Criação das colunas
+    col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+    
+    # Primeira Coluna: Gráfico por Sexo
+    with col1:
+        fig1 = graphs.grafico_perfil_curso(df_filtrado, 'Gênero')
+        st.plotly_chart(fig1, use_container_width=True)
+    
+    # Segunda Coluna: Gráfico por Etnia/Raça/Cor
+    with col2:
+        fig2 = graphs.grafico_perfil_curso(df_filtrado, 'Etnia/Raça/Cor')
+        st.plotly_chart(fig2, use_container_width=True)
+
+    # Terceira Coluna: Gráfico por Tipo de Escola de Origem
+    with col3:
+        fig3 = graphs.grafico_perfil_curso(df_filtrado, 'Tipo de Escola de Origem')
+        st.plotly_chart(fig3, use_container_width=True)
+
+    # Quarta Coluna: Gráfico por Cidade
+    with col4:
+        fig4 = graphs.grafico_perfil_curso(df_filtrado, 'Cidade')
+        st.plotly_chart(fig4, use_container_width=True)

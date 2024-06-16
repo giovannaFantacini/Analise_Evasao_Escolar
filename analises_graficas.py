@@ -266,32 +266,46 @@ def grafico_formacao_prazo(df, x, y, title):
 
     return fig
 
-#Grafico para mostrar o total de alunos por modalidade
-def grafico_total_alunos_modalidade(df):
-    enrolled_df = df[df['Situação no Curso'] == 'Matriculado']
-    enrolled_counts = enrolled_df['Modalidade'].value_counts().reset_index()
+import pandas as pd
+import plotly.express as px
+
+def grafico_total_alunos_modalidade(df, tipo_grafico='Total'):
+    # Contagem de alunos matriculados por modalidade
+    enrolled_counts = df[df['Situação no Curso'] == 'Matriculado']['Modalidade'].value_counts().reset_index()
     enrolled_counts.columns = ['Modalidade', 'Total Matriculados']
 
-    try:
-        # Plotar o gráfico de barras com Plotly Express usando as cores do gradiente
+    # Contagem de alunos evadidos por modalidade
+    evaded_counts = df[df['Situação no Curso'] == 'Evasão']['Modalidade'].value_counts().reset_index()
+    evaded_counts.columns = ['Modalidade', 'Total Evadidos']
+
+    # Merge dos dataframes matriculados e evadidos
+    modalidade_counts = pd.merge(enrolled_counts, evaded_counts, on='Modalidade', how='outer').fillna(0)
+
+    if tipo_grafico == 'Evasão':
+        modalidade_counts.sort_values(by='Total Evadidos', ascending=False, inplace=True)
+        # Plotar gráfico de barras para evasão
         fig = px.bar(
-            enrolled_counts,
+            modalidade_counts,
+            x='Modalidade',
+            y='Total Evadidos',
+            title='Total de Alunos Evadidos por Modalidade na Instituição',
+            text_auto=True,
+            color='Modalidade',
+            color_discrete_map={mod: cor for mod, cor in zip(enrolled_counts['Modalidade'], cores_gradiente)}  
+        )
+    elif tipo_grafico == 'Total':
+        # Ordenar os dados para melhor visualização
+        modalidade_counts.sort_values(by='Total Matriculados', ascending=False, inplace=True)
+        # Plotar gráfico de barras para total de matriculados
+        fig = px.bar(
+            modalidade_counts,
             x='Modalidade',
             y='Total Matriculados',
-            title='Total de Alunos Matriculados por Modalidade em 2024',
+            title='Total de Alunos Matriculados por Modalidade na Instituição',
             text_auto=True,
             color='Modalidade',
             color_discrete_map={mod: cor for mod, cor in zip(enrolled_counts['Modalidade'], cores_gradiente)}
         )
-    except: 
-        # Plotar o gráfico de barras com Plotly Express usando as cores do gradiente
-        fig = px.bar(
-            enrolled_counts,
-            x='Modalidade',
-            y='Total Matriculados',
-            title='Total de Alunos Matriculados por Modalidade em 2024',
-            text_auto=True,
-            color='Modalidade')
 
     # Remover legendas e rótulos desnecessários
     fig.update_layout(showlegend=False, xaxis_title='', yaxis_title='', yaxis_showticklabels=False)
@@ -300,9 +314,8 @@ def grafico_total_alunos_modalidade(df):
     fig.update_traces(marker=dict(line=dict(color='#000000', width=1), opacity=0.8))
     fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
-    fig.update_layout(autosize=True)
-
     return fig
+
 
 def calcula_metricas_evasao(df):
     evasion_df = df[df['Situação no Curso'] == 'Evasão']
@@ -471,5 +484,43 @@ def grafico_pendencias(df):
     )
 
     return fig
+
+def grafico_totalAlunos_evasao_formaIngresso(df):
+    # Contar total de entradas por forma de ingresso
+    entradas = df.groupby('Forma de Ingresso').size().reset_index(name='Ingresssaram')
+
+    # Contar total de evasões por forma de ingresso
+    evasoes = df[df['Situação no Curso'] == 'Evasão'].groupby('Forma de Ingresso').size().reset_index(name='Evadiram')
+
+    # Unindo os dataframes de entrada e evasão
+    resultado = pd.merge(entradas, evasoes, on='Forma de Ingresso', how='left')
+    resultado['Evadiram'] = resultado['Evadiram'].fillna(0)  # Preencher os NaNs com 0
+
+    # Simplificar o texto das formas de ingresso
+    def simplify_forma_ingresso(text):
+        if 'Ampla Concorrência' in text:
+            return 'Ampla Concorrência'
+        elif 'SiSU L' in text:
+            return text.split('-')[0].strip()
+        return text
+
+    resultado['Forma de Ingresso'] = resultado['Forma de Ingresso'].apply(simplify_forma_ingresso)
+
+    # Agrupar novamente após simplificação para combinar as entradas e evasões simplificadas
+    resultado = resultado.groupby('Forma de Ingresso').agg({'Ingresssaram': 'sum', 'Evadiram': 'sum'}).reset_index()
+    resultado['Total'] = resultado['Ingresssaram'] + resultado['Evadiram']
+    resultado = resultado.sort_values(by='Total', ascending=True)
+
+    # Criando o gráfico de barras empilhadas horizontal
+    fig = px.bar(resultado, y='Forma de Ingresso', x=['Ingresssaram', 'Evadiram'],
+                 title='Comparativo de Ingresso e Evasão por Forma de Ingresso',
+                 labels={'value': 'Número de Alunos', 'variable': 'Status'},
+                 color_discrete_map={'Ingresssaram': cores_situacao_curso['Total Alunos'],
+                                     'Evadiram': cores_situacao_curso['Evasão']},
+                 orientation='h', text_auto='.2s')  # Orientação horizontal
+
+    # Melhorar a apresentação
+    fig.update_layout(barmode='stack', yaxis_title='Forma de Ingresso', xaxis_title='Número de Alunos',
+                      yaxis={'categoryorder':'total descending'}, height=800)
 
     return fig
