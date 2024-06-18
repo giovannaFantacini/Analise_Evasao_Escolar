@@ -56,9 +56,10 @@ else:
     df = df[df['Descrição do Curso'] == curso]
 
 with st.container():
-    col1, col2 = st.columns([1, 12])  
+    col1, col2, col3 = st.columns([1, 10,5])  
 
     with col1:
+        st.write('\n\n\n\n\n\n')
         current_dir = os.path.dirname(__file__)
         img_path = os.path.join(current_dir, '../assets/logoIF.png')
         st.image(img_path, width=70)  
@@ -67,6 +68,15 @@ with st.container():
         st.title('Análise de Evasão Escolar')
         st.subheader(curso)
 
+    with col3:
+        num_alunos = len(df[df['Situação no Curso'] == 'Matriculado'])
+        st.markdown(f"""
+            <div style="text-align: center;">
+                <h1>{num_alunos}</h1>
+                <p>Total de Alunos Matriculados</p>
+            </div>
+            """, unsafe_allow_html=True)
+    
     st.write('\n\n\n\n')
 
 with st.container():
@@ -142,6 +152,26 @@ if df['Modalidade'].iloc[0] != "Técnico Integrado":
                 df_filtra_ano = df
             fig2 = graphs.grafico_pendencias(df_filtra_ano)
             st.plotly_chart(fig2, use_container_width=True)
+
+with st.container():
+    col1, col2 = st.columns([1, 1])
+
+    with col1:
+        fig, df_taxa = graphs.grafico_taxa_evasao_formaIngresso(df_filtrado)
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+
+        top_5_data = df_taxa.sort_values(by="taxa_evasao", ascending=False).head(10)
+        top_5_data["Total de Alunos"] = top_5_data["Ingresssaram"].round(1)
+        top_5_data["Total de Evasão"] = top_5_data["Evadiram"].round(1)
+        top_5_data["Taxa de Evasão"] = top_5_data["taxa_evasao"].round(1)
+
+        top_5_data.reset_index(drop=True, inplace=True)
+
+        st.subheader("Top 10 Taxas de Evasão")
+        st.table(top_5_data[["Forma de Ingresso", "Total de Alunos", "Total de Evasão", "Taxa de Evasão"]])
+
 
 with st.container():
     df_filtrado = df[df['Situação no Curso'] == 'Matriculado']

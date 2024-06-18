@@ -485,12 +485,14 @@ def grafico_pendencias(df):
 
     return fig
 
-def grafico_totalAlunos_evasao_formaIngresso(df):
+def grafico_taxa_evasao_formaIngresso(df):
     # Contar total de entradas por forma de ingresso
     entradas = df.groupby('Forma de Ingresso').size().reset_index(name='Ingresssaram')
 
     # Contar total de evasões por forma de ingresso
-    evasoes = df[df['Situação no Curso'] == 'Evasão'].groupby('Forma de Ingresso').size().reset_index(name='Evadiram')
+    evasoes = df[(df['Situação no Curso'] == 'Evasão') |
+                 (df['Situação no Curso'] == 'Cancelado') |
+                 (df['Situação no Curso'] == 'Cancelamento Compulsório')].groupby('Forma de Ingresso').size().reset_index(name='Evadiram')
 
     # Unindo os dataframes de entrada e evasão
     resultado = pd.merge(entradas, evasoes, on='Forma de Ingresso', how='left')
@@ -508,19 +510,22 @@ def grafico_totalAlunos_evasao_formaIngresso(df):
 
     # Agrupar novamente após simplificação para combinar as entradas e evasões simplificadas
     resultado = resultado.groupby('Forma de Ingresso').agg({'Ingresssaram': 'sum', 'Evadiram': 'sum'}).reset_index()
-    resultado['Total'] = resultado['Ingresssaram'] + resultado['Evadiram']
-    resultado = resultado.sort_values(by='Total', ascending=True)
+    resultado['taxa_evasao'] = resultado['Evadiram'] / resultado['Ingresssaram'] * 100
+    resultado = resultado.sort_values(by='taxa_evasao', ascending=True)
+
+    resultado = resultado.query('taxa_evasao > 0')
 
     # Criando o gráfico de barras empilhadas horizontal
-    fig = px.bar(resultado, y='Forma de Ingresso', x=['Ingresssaram', 'Evadiram'],
-                 title='Comparativo de Ingresso e Evasão por Forma de Ingresso',
-                 labels={'value': 'Número de Alunos', 'variable': 'Status'},
-                 color_discrete_map={'Ingresssaram': cores_situacao_curso['Total Alunos'],
-                                     'Evadiram': cores_situacao_curso['Evasão']},
+    fig = px.bar(resultado, y='Forma de Ingresso', x='taxa_evasao',
+                 title='Taxa de Evasão e Cancelamento (%) por Forma de Ingresso',
+                 barmode="group",
+                 color_discrete_sequence = [cores_situacao_curso['Evasão']],
                  orientation='h', text_auto='.2s')  # Orientação horizontal
 
     # Melhorar a apresentação
-    fig.update_layout(barmode='stack', yaxis_title='Forma de Ingresso', xaxis_title='Número de Alunos',
-                      yaxis={'categoryorder':'total descending'}, height=800)
+    fig.update_layout( xaxis_title="", yaxis_title="",
+                       yaxis=dict(showticklabels=True), xaxis=dict(showticklabels=False), 
+                       yaxis_tickformat=".2f%",height=600)
 
-    return fig
+    
+    return fig, resultado
