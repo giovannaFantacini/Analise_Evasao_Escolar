@@ -490,9 +490,7 @@ def grafico_taxa_evasao_formaIngresso(df):
     entradas = df.groupby('Forma de Ingresso').size().reset_index(name='Ingresssaram')
 
     # Contar total de evasões por forma de ingresso
-    evasoes = df[(df['Situação no Curso'] == 'Evasão') |
-                 (df['Situação no Curso'] == 'Cancelado') |
-                 (df['Situação no Curso'] == 'Cancelamento Compulsório')].groupby('Forma de Ingresso').size().reset_index(name='Evadiram')
+    evasoes = df[(df['Situação no Curso'] == 'Evasão')].groupby('Forma de Ingresso').size().reset_index(name='Evadiram')
 
     # Unindo os dataframes de entrada e evasão
     resultado = pd.merge(entradas, evasoes, on='Forma de Ingresso', how='left')
@@ -517,7 +515,7 @@ def grafico_taxa_evasao_formaIngresso(df):
 
     # Criando o gráfico de barras empilhadas horizontal
     fig = px.bar(resultado, y='Forma de Ingresso', x='taxa_evasao',
-                 title='Taxa de Evasão e Cancelamento (%) por Forma de Ingresso',
+                 title='Taxa de Evasão (%) por Forma de Ingresso',
                  barmode="group",
                  color_discrete_sequence = [cores_situacao_curso['Evasão']],
                  orientation='h', text_auto='.2s')  # Orientação horizontal

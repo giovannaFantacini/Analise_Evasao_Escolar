@@ -163,14 +163,15 @@ with st.container():
     with col2:
 
         top_5_data = df_taxa.sort_values(by="taxa_evasao", ascending=False).head(10)
-        top_5_data["Total de Alunos"] = top_5_data["Ingresssaram"].round(1)
-        top_5_data["Total de Evasão"] = top_5_data["Evadiram"].round(1)
-        top_5_data["Taxa de Evasão"] = top_5_data["taxa_evasao"].round(1)
+        top_5_data["Total de Alunos"] = top_5_data["Ingresssaram"]
+        top_5_data["Total de Evasão"] = top_5_data["Evadiram"]
+        top_5_data["Taxa de Evasão"] = top_5_data["taxa_evasao"]
 
         top_5_data.reset_index(drop=True, inplace=True)
 
         st.subheader("Top 10 Taxas de Evasão")
-        st.table(top_5_data[["Forma de Ingresso", "Total de Alunos", "Total de Evasão", "Taxa de Evasão"]])
+        st.table(top_5_data[["Forma de Ingresso", "Total de Alunos", "Total de Evasão", "Taxa de Evasão"]].style.format({
+                "Total de Alunos": "{:.2f}", "Total de Evasão": "{:.2f}", "Taxa de Evasão": "{:.2f}"}))
 
 
 with st.container():
