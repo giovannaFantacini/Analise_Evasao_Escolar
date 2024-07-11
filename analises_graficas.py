@@ -475,18 +475,18 @@ def grafico_pendencias(df):
     df_pendencias.columns = ['Pendência', 'Número de Alunos']
     df_pendencias = df_pendencias[df_pendencias['Número de Alunos'] > 0]
 
-    # Cria o gráfico de barras usando Plotly Express
     fig = px.bar(
         df_pendencias,
         x='Pendência',
         y='Número de Alunos',
         title='Pendências dos Alunos Matriculados que Deveriam Ter Se Formado',
         labels={'Pendência': 'Pendência', 'Número de Alunos': 'Número de Alunos'},
-        text='Número de Alunos'
+        text='Número de Alunos',
+        color_discrete_sequence=['darkblue']  # Cor azul escuro
     )
 
     # Atualiza o layout para ajustar a posição dos rótulos de dados
-    fig.update_traces(textposition='outside')
+    fig.update_traces(textposition='inside', textfont_size=12, textfont_color='white')
 
     fig.update_layout(
         xaxis_tickangle=-45,
