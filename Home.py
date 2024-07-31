@@ -43,8 +43,23 @@ with st.container():
         st.plotly_chart(fig1, use_container_width=True)
     
     with col2:
-        fig2 = graphs.grafico_total_alunos_modalidade(df, 'Evasão')
+        fig2 = graphs.grafico_comparativo_evasao(df_filtrado, 'Etnia/Raça/Cor')
         st.plotly_chart(fig2, use_container_width=True)
+
+with st.container():
+    col1, col2, col3 = st.columns([1, 1, 1])
+    
+    with col1:
+        fig1 = graphs.grafico_comparativo_evasao(df_filtrado, 'Tipo de Escola de Origem')
+        st.plotly_chart(fig1, use_container_width=True)
+    
+    with col2:
+        fig2 = graphs.grafico_comparativo_evasao(df_filtrado, 'Gênero')
+        st.plotly_chart(fig2, use_container_width=True)
+    
+    with col3:
+        fig3 = graphs.grafico_comparativo_evasao(df_filtrado, 'Cidade')
+        st.plotly_chart(fig3, use_container_width=True)
 
 with st.container():
     col1, col2 = st.columns([1,1])
@@ -65,28 +80,6 @@ with st.container():
         fig2 = graphs.grafico_total_alunos_modalidade(df)
         st.plotly_chart(fig2, use_container_width=True)
         
-
-with st.container():
-    col1, col2 = st.columns([1, 1])
-    
-    with col1:
-        fig1 = graphs.grafico_comparativo_evasao(df_filtrado, 'Tipo de Escola de Origem')
-        st.plotly_chart(fig1, use_container_width=True)
-    
-    with col2:
-        fig2 = graphs.grafico_comparativo_evasao(df_filtrado, 'Gênero')
-        st.plotly_chart(fig2, use_container_width=True)
-
-with st.container():
-    col1, col2 = st.columns([1, 1])
-    
-    with col1:
-        fig1 = graphs.grafico_comparativo_evasao(df_filtrado, 'Etnia/Raça/Cor')
-        st.plotly_chart(fig1, use_container_width=True)
-    
-    with col2:
-        fig2 = graphs.grafico_comparativo_evasao(df_filtrado, 'Cidade')
-        st.plotly_chart(fig2, use_container_width=True)
         
 
 
