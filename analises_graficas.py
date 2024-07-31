@@ -59,6 +59,15 @@ cores_gradiente = {
     '#66BBB9',  
     '#99CDCD'
 }
+cores_gradiente_evasao = {
+    '#C7282A',  # Tom base
+    '#D1383A',
+    '#DB484A',
+    '#E4585A',
+    '#ED686A',
+    '#F6787A',
+    '#FF888A'
+}
 
 
 # Função para criar o gráfico de barras com duas colunas sendo uma de total de alunos e uma de evasão
@@ -291,7 +300,7 @@ def grafico_total_alunos_modalidade(df, tipo_grafico='Total'):
             title='Total de Alunos Evadidos por Modalidade na Instituição',
             text_auto=True,
             color='Modalidade',
-            color_discrete_map={mod: cor for mod, cor in zip(enrolled_counts['Modalidade'], cores_gradiente)}  
+            color_discrete_map={mod: cor for mod, cor in zip(enrolled_counts['Modalidade'], cores_gradiente_evasao)}  
         )
     elif tipo_grafico == 'Total':
         # Ordenar os dados para melhor visualização
@@ -317,76 +326,75 @@ def grafico_total_alunos_modalidade(df, tipo_grafico='Total'):
     return fig
 
 
-def calcula_metricas_evasao(df):
-    evasion_df = df[df['Situação no Curso'] == 'Evasão']
+def calcula_metricas_evasao(df, categoria):
 
-    def maior_porcentagem(coluna):
-        # Calcula a porcentagem para cada atributo na coluna
-        porcentagens = (evasion_df[coluna].value_counts(normalize=True) * 100)
-        # Encontra o valor máximo e o atributo correspondente
-        max_porcentagem = porcentagens.max()
-        max_atributo = porcentagens.idxmax()
-        return (max_atributo, max_porcentagem)
+    def calcular_taxas(coluna):
+        # Contar total de ingressos por coluna
+        entradas = df.groupby(coluna).size().reset_index(name='Total Alunos')
 
-    # Dicionário para armazenar os resultados
-    resultados = {
-        'Gênero': maior_porcentagem('Gênero'),
-        'Tipo de Escola de Origem': maior_porcentagem('Tipo de Escola de Origem'),
-        'Etnia/Raça/Cor': maior_porcentagem('Etnia/Raça/Cor'),
-        'Cidade': maior_porcentagem('Cidade')
-    }
-    return resultados
+        # Contar total de evasões por coluna
+        saida = df[df['Situação no Curso'] == 'Evasão'].groupby(coluna).size().reset_index(name='Evasão')
 
-def grafico_perfil_evasao(df):
-    resultados = calcula_metricas_evasao(df)
-    # Preparando os dados para o gráfico
-    categorias = []
-    porcentagens = []
-    textos = []
+        # Unindo os dataframes de entrada e evasão
+        evasao = pd.merge(entradas, saida, on=coluna, how='left')
+        evasao['Evasão'] = evasao['Evasão'].fillna(0)
+        
+        return evasao
 
-    for categoria, (nome, pct) in resultados.items():  
-        categorias.append(categoria)
-        porcentagens.append(pct) 
-        textos.append(f"{nome}\n{pct:.2f}%")
+    resultado = calcular_taxas(categoria)
+    return resultado
 
-    # Criando o DataFrame
-    data = pd.DataFrame({
-        'Categoria': categorias,
-        'Porcentagem': porcentagens,
-        'Texto': textos
-    })
-
-    # Criando o gráfico de bolhas
-    fig = px.scatter(data, 
-                    x="Categoria", 
-                    y=[1]*len(data),  # Cria uma coluna com todos os valores como 1 para alinhar horizontalmente
-                    size="Porcentagem", 
-                    color="Categoria",
-                    text="Texto",  # Adiciona o texto das categorias nas bolhas
-                    size_max=100,
-                    )
+def grafico_comparativo_evasao(df, categoria):
+    evasao = calcula_metricas_evasao(df, categoria)
+    
+    # Reformulando os dados para o gráfico
+    data = pd.melt(evasao, id_vars=[categoria], value_vars=['Total Alunos', 'Evasão'],
+                   var_name='Status', value_name='Quantidade')
+    
+    try:
+        # Criando o gráfico de barras
+        fig = px.bar(data, 
+                    x=categoria, 
+                    y='Quantidade', 
+                    color='Status', 
+                    barmode='group',
+                    text_auto=True,
+                    title=f"Total de Alunos e Evasão por {categoria}",
+                    labels={'Quantidade': 'Número de Alunos', categoria: categoria}, 
+                    color_discrete_map= {
+                                        'Total Alunos': cores_situacao_curso['Total Alunos'],
+                                        'Evasão': cores_situacao_curso['Evasão']
+                                    })
+    except:
+        # Criando o gráfico de barras
+        fig = px.bar(data, 
+                    x=categoria, 
+                    y='Quantidade', 
+                    color='Status', 
+                    barmode='group',
+                    text_auto=True,
+                    title=f"Total de Alunos e Evasão por {categoria}",
+                    labels={'Quantidade': 'Número de Alunos', categoria: categoria})
 
     # Ajustando detalhes do layout
     fig.update_layout(
-        title="Perfil dos alunos que evadiram",
-        xaxis_title="",
-        yaxis_title="",
-        yaxis=dict(showticklabels=False), 
-        xaxis=dict(showticklabels=True),
-        showlegend=False,  # Esconde a legenda padrão
-    )
-
-    # Ajusta os detalhes dos marcadores (bolhas)
-    fig.update_traces(
-        textposition='middle center',
-        marker=dict(line=dict(width=2, color='DarkSlateGrey')),
-        textfont_size=14,
-        mode='markers+text'
+       xaxis_title="", yaxis_title="",
+        yaxis=dict(showticklabels=True), xaxis=dict(showticklabels=True))
+    
+    fig.update_layout(
+        legend=dict(
+            orientation="h",  
+            yanchor="bottom",
+            y=1.02,  
+            xanchor="right",
+            x=1  
+        ),
+        legend_title_text='',  # Remove legend title
+        showlegend=True
     )
     
-    fig.update_layout(autosize=True)
+    return fig
 
-    return fig 
 
 def adicionar_faixa_progresso(df):
     df['Percentual de Progresso'] = df['Percentual de Progresso'].str.replace(',','.').astype(float)
@@ -499,7 +507,7 @@ def grafico_pendencias(df):
 
 def grafico_taxa_evasao_formaIngresso(df):
     # Contar total de entradas por forma de ingresso
-    entradas = df.groupby('Forma de Ingresso').size().reset_index(name='Ingresssaram')
+    entradas = df.groupby('Forma de Ingresso').size().reset_index(name='Ingressaram')
 
     # Contar total de evasões por forma de ingresso
     evasoes = df[(df['Situação no Curso'] == 'Evasão')].groupby('Forma de Ingresso').size().reset_index(name='Evadiram')
@@ -508,34 +516,59 @@ def grafico_taxa_evasao_formaIngresso(df):
     resultado = pd.merge(entradas, evasoes, on='Forma de Ingresso', how='left')
     resultado['Evadiram'] = resultado['Evadiram'].fillna(0)  # Preencher os NaNs com 0
 
-    # Simplificar o texto das formas de ingresso
-    def simplify_forma_ingresso(text):
-        if 'Ampla Concorrência' in text:
+    # Dividir as modalidades conforme as categorias
+    def categorize_forma_ingresso(text):
+        text = text.lower()
+        if 'ampla concorrência' in text:
             return 'Ampla Concorrência'
-        elif 'SiSU L' in text:
-            return text.split('-')[0].strip()
-        return text
+        elif ('escolas públicas' in text or 'ep' in text or 'escola pública' in text) and 'renda' in text and ('ppi' in text or 'pretos' in text or 'etnia' in text) and ('pcd' in text or 'deficiência' in text):
+            if 'independente da renda' in text or 'independente de renda' in text:
+                return 'Escola Pública + PPI + PCD'
+            return 'Escola Pública + Renda + PPI + PCD'
+        elif ('escolas públicas' in text or 'ep' in text or 'escola pública' in text) and 'renda' in text and ('ppi' in text or 'pretos' in text or 'etnia' in text):
+            if 'independente da renda' in text or 'independente de renda' in text:
+                return 'Escola Pública + PPI'
+            return 'Escola Pública + Renda + PPI'
+        elif ('escolas públicas' in text or 'ep' in text or 'escola pública' in text) and 'renda' in text and ('pcd' in text or 'deficiência' in text):
+            if 'independente da renda' in text or 'independente de renda' in text:
+                return 'Escola Pública + PCD'
+            return 'Escola Pública + Renda + PCD'
+        elif ('escolas públicas' in text or 'ep' in text or 'escola pública' in text) and 'renda' in text:
+            if 'independente da renda' in text or 'independente de renda' in text:
+                return 'Escola Pública'
+            return 'Escola Pública + Renda'
+        elif ('escolas públicas' in text or 'ep' in text or 'escola pública' in text) and ('ppi' in text or 'pretos' in text or 'etnia' in text) and ('pcd' in text or 'deficiência' in text):
+            return 'Escola Pública + PPI + PCD'
+        elif ('escolas públicas' in text or 'ep' in text or 'escola pública' in text) and ('ppi' in text or 'pretos' in text or 'etnia' in text):
+            return 'Escola Pública + PPI'
+        elif ('escolas públicas' in text or 'ep' in text or 'escola pública' in text) and ('pcd' in text or 'deficiência' in text):
+            return 'Escola Pública + PCD'
+        elif 'escolas públicas' in text or 'ep' in text or 'escola pública' in text:
+            return 'Escola Pública'
+        elif 'transferência' in text:
+            return 'Transferência'
+        else:
+            return 'Outros'
 
-    resultado['Forma de Ingresso'] = resultado['Forma de Ingresso'].apply(simplify_forma_ingresso)
+    resultado['Categoria'] = resultado['Forma de Ingresso'].apply(categorize_forma_ingresso)
 
-    # Agrupar novamente após simplificação para combinar as entradas e evasões simplificadas
-    resultado = resultado.groupby('Forma de Ingresso').agg({'Ingresssaram': 'sum', 'Evadiram': 'sum'}).reset_index()
-    resultado['taxa_evasao'] = resultado['Evadiram'] / resultado['Ingresssaram'] * 100
+    # Agrupar por categoria e somar as entradas e evasões
+    resultado = resultado.groupby('Categoria').agg({'Ingressaram': 'sum', 'Evadiram': 'sum'}).reset_index()
+    resultado['taxa_evasao'] = resultado['Evadiram'] / resultado['Ingressaram'] * 100
     resultado = resultado.sort_values(by='taxa_evasao', ascending=True)
 
     resultado = resultado.query('taxa_evasao > 0')
 
     # Criando o gráfico de barras empilhadas horizontal
-    fig = px.bar(resultado, y='Forma de Ingresso', x='taxa_evasao',
-                 title='Taxa de Evasão (%) por Forma de Ingresso',
+    fig = px.bar(resultado, y='Categoria', x='taxa_evasao',
+                 title='Taxa de Evasão (%) por Categoria de Forma de Ingresso',
                  barmode="group",
-                 color_discrete_sequence = [cores_situacao_curso['Evasão']],
+                 color_discrete_sequence=['#EF553B'],  # Cor personalizada
                  orientation='h', text_auto='.2s')  # Orientação horizontal
 
     # Melhorar a apresentação
-    fig.update_layout( xaxis_title="", yaxis_title="",
-                       yaxis=dict(showticklabels=True), xaxis=dict(showticklabels=False), 
-                       yaxis_tickformat=".2f%",height=600)
+    fig.update_layout(xaxis_title="", yaxis_title="",
+                      yaxis=dict(showticklabels=True), xaxis=dict(showticklabels=False),
+                      yaxis_tickformat=".2f%", height=600)
 
-    
     return fig, resultado

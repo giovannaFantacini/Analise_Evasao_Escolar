@@ -99,8 +99,24 @@ with st.container():
         st.plotly_chart(fig1, use_container_width=True)
     
     with col2:
-        fig2 = graphs.grafico_perfil_evasao(df_filtrado)
+        fig2 = graphs.grafico_comparativo_evasao(df_filtrado, 'Etnia/Raça/Cor')
         st.plotly_chart(fig2, use_container_width=True)
+
+with st.container():
+    col1, col2, col3 = st.columns([1, 1, 1])
+    
+    with col1:
+        fig1 = graphs.grafico_comparativo_evasao(df_filtrado, 'Tipo de Escola de Origem')
+        st.plotly_chart(fig1, use_container_width=True)
+    
+    with col2:
+        fig2 = graphs.grafico_comparativo_evasao(df_filtrado, 'Gênero')
+        st.plotly_chart(fig2, use_container_width=True)
+    
+    with col3:
+        fig3 = graphs.grafico_comparativo_evasao(df_filtrado, 'Cidade')
+        st.plotly_chart(fig3, use_container_width=True)
+        
     
 with st.container():
     col1, col2 = st.columns([1, 1])
@@ -159,19 +175,18 @@ with st.container():
     with col1:
         fig, df_taxa = graphs.grafico_taxa_evasao_formaIngresso(df_filtrado)
         st.plotly_chart(fig, use_container_width=True)
-    
+
     with col2:
+        top_10_data = df_taxa.sort_values(by="taxa_evasao", ascending=False).head(10)
+        top_10_data["Total de Alunos"] = top_10_data["Ingressaram"]
+        top_10_data["Total de Evasão"] = top_10_data["Evadiram"]
+        top_10_data["Taxa de Evasão"] = top_10_data["taxa_evasao"]
 
-        top_5_data = df_taxa.sort_values(by="taxa_evasao", ascending=False).head(10)
-        top_5_data["Total de Alunos"] = top_5_data["Ingresssaram"]
-        top_5_data["Total de Evasão"] = top_5_data["Evadiram"]
-        top_5_data["Taxa de Evasão"] = top_5_data["taxa_evasao"]
-
-        top_5_data.reset_index(drop=True, inplace=True)
+        top_10_data.reset_index(drop=True, inplace=True)
 
         st.subheader("Top 10 Taxas de Evasão")
-        st.table(top_5_data[["Forma de Ingresso", "Total de Alunos", "Total de Evasão", "Taxa de Evasão"]].style.format({
-                "Total de Alunos": "{:.2f}", "Total de Evasão": "{:.2f}", "Taxa de Evasão": "{:.2f}"}))
+        st.table(top_10_data[["Categoria", "Total de Alunos", "Total de Evasão", "Taxa de Evasão"]].style.format({
+            "Total de Alunos": "{:.2f}", "Total de Evasão": "{:.2f}", "Taxa de Evasão": "{:.2f}"}))
 
 
 with st.container():
