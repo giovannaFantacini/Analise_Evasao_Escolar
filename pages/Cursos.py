@@ -185,7 +185,7 @@ with st.container():
         top_10_data.reset_index(drop=True, inplace=True)
 
         st.subheader("Top 10 Taxas de Evasão")
-        st.table(top_10_data[["Categoria", "Total de Alunos", "Total de Evasão", "Taxa de Evasão"]].style.format({
+        st.table(top_10_data[['Forma de Ingresso', "Total de Alunos", "Total de Evasão", "Taxa de Evasão"]].style.format({
             "Total de Alunos": "{:.2f}", "Total de Evasão": "{:.2f}", "Taxa de Evasão": "{:.2f}"}))
 
 

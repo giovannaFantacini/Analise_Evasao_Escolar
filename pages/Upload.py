@@ -3,10 +3,12 @@ import pandas as pd
 import PreProcessamento.pre_processamento
 import os
 import PreProcessamento
-
+import utils
 
 # Configurações da página
 st.set_page_config(page_title='Analise Evasao Escolar', layout='wide')
+
+lista_municipios = [""] + utils.carrega_municipios()
 
 with st.container():
     col1, col2 = st.columns([1, 12])
@@ -59,7 +61,11 @@ with st.container():
     st.write('32. Carga-Horária Optativa Pendente')
     st.write('33. Carga-Horária Obrigatória Pendente')
     st.write('34. Registro do ENADE')
-    st.write('Além disso, tambem é necessario selecionar a cidade de origem da instituição: ')
+
+    cidade = st.selectbox(
+    'Além disso, tambem é necessario selecionar a cidade de origem da instituição: ',
+    lista_municipios,
+    )
     
 
 
@@ -67,12 +73,16 @@ with st.container():
     uploaded_file = st.file_uploader("Escolha o arquivo", type=['csv', 'xlsx'])
 
     if uploaded_file is not None:
-        if uploaded_file.type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-            df = pd.read_excel(uploaded_file)
+        if not cidade:
+            st.warning("Por favor, selecione a cidade de origem da instituição para continuar o processamento.")
         else:
-            df = pd.read_csv(uploaded_file)
-        df_treated = PreProcessamento.pre_processamento.treat_file(df)
-        st.session_state['uploaded_df'] = df_treated
+            if uploaded_file.type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                df = pd.read_excel(uploaded_file)
+            else:
+                df = pd.read_csv(uploaded_file)
+    
+            df_treated = PreProcessamento.pre_processamento.treat_file(df, cidade)
+            st.session_state['uploaded_df'] = df_treated
     
     if 'uploaded_df' in st.session_state:
         df = st.session_state['uploaded_df']

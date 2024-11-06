@@ -516,51 +516,15 @@ def grafico_taxa_evasao_formaIngresso(df):
     resultado = pd.merge(entradas, evasoes, on='Forma de Ingresso', how='left')
     resultado['Evadiram'] = resultado['Evadiram'].fillna(0)  # Preencher os NaNs com 0
 
-    # Dividir as modalidades conforme as categorias
-    def categorize_forma_ingresso(text):
-        text = text.lower()
-        if 'ampla concorrência' in text:
-            return 'Ampla Concorrência'
-        elif ('escolas públicas' in text or 'ep' in text or 'escola pública' in text) and 'renda' in text and ('ppi' in text or 'pretos' in text or 'etnia' in text) and ('pcd' in text or 'deficiência' in text):
-            if 'independente da renda' in text or 'independente de renda' in text:
-                return 'Escola Pública + PPI + PCD'
-            return 'Escola Pública + Renda + PPI + PCD'
-        elif ('escolas públicas' in text or 'ep' in text or 'escola pública' in text) and 'renda' in text and ('ppi' in text or 'pretos' in text or 'etnia' in text):
-            if 'independente da renda' in text or 'independente de renda' in text:
-                return 'Escola Pública + PPI'
-            return 'Escola Pública + Renda + PPI'
-        elif ('escolas públicas' in text or 'ep' in text or 'escola pública' in text) and 'renda' in text and ('pcd' in text or 'deficiência' in text):
-            if 'independente da renda' in text or 'independente de renda' in text:
-                return 'Escola Pública + PCD'
-            return 'Escola Pública + Renda + PCD'
-        elif ('escolas públicas' in text or 'ep' in text or 'escola pública' in text) and 'renda' in text:
-            if 'independente da renda' in text or 'independente de renda' in text:
-                return 'Escola Pública'
-            return 'Escola Pública + Renda'
-        elif ('escolas públicas' in text or 'ep' in text or 'escola pública' in text) and ('ppi' in text or 'pretos' in text or 'etnia' in text) and ('pcd' in text or 'deficiência' in text):
-            return 'Escola Pública + PPI + PCD'
-        elif ('escolas públicas' in text or 'ep' in text or 'escola pública' in text) and ('ppi' in text or 'pretos' in text or 'etnia' in text):
-            return 'Escola Pública + PPI'
-        elif ('escolas públicas' in text or 'ep' in text or 'escola pública' in text) and ('pcd' in text or 'deficiência' in text):
-            return 'Escola Pública + PCD'
-        elif 'escolas públicas' in text or 'ep' in text or 'escola pública' in text:
-            return 'Escola Pública'
-        elif 'transferência' in text:
-            return 'Transferência'
-        else:
-            return 'Outros'
-
-    resultado['Categoria'] = resultado['Forma de Ingresso'].apply(categorize_forma_ingresso)
-
     # Agrupar por categoria e somar as entradas e evasões
-    resultado = resultado.groupby('Categoria').agg({'Ingressaram': 'sum', 'Evadiram': 'sum'}).reset_index()
+    resultado = resultado.groupby('Forma de Ingresso').agg({'Ingressaram': 'sum', 'Evadiram': 'sum'}).reset_index()
     resultado['taxa_evasao'] = resultado['Evadiram'] / resultado['Ingressaram'] * 100
     resultado = resultado.sort_values(by='taxa_evasao', ascending=True)
 
     resultado = resultado.query('taxa_evasao > 0')
 
     # Criando o gráfico de barras empilhadas horizontal
-    fig = px.bar(resultado, y='Categoria', x='taxa_evasao',
+    fig = px.bar(resultado, y='Forma de Ingresso', x='taxa_evasao',
                  title='Taxa de Evasão (%) por Categoria de Forma de Ingresso',
                  barmode="group",
                  color_discrete_sequence=['#EF553B'],  # Cor personalizada

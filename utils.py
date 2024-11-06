@@ -43,3 +43,16 @@ def carrega_dados(uploaded_file=None):
         client.close()
 
     return df
+
+@st.cache_data
+def carrega_municipios():
+    url = "https://servicodados.ibge.gov.br/api/v1/localidades/distritos"
+
+    # Requisição para a API
+    response = requests.get(url)
+    data = response.json()
+
+    # Gerar lista de nomes dos municípios
+    municipios_nomes = [item["municipio"]["nome"] for item in data]
+
+    return municipios_nomes
