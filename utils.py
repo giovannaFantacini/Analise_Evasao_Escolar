@@ -12,8 +12,8 @@ def ler_url(config_file):
         url = file.readline().strip()
     return url
 
-DATABASE_NAME = 'TCC'
-COLLECTION_NAME = 'BaseSuap'
+DATABASE_NAME = 'BaseSuap'
+COLLECTION_NAME = 'BaseTcc'
 
 # Função para carregar dados do MongoDB
 @st.cache_data
@@ -24,7 +24,7 @@ def carrega_dados(uploaded_file=None):
     else:
         # # Diretório atual e caminho do arquivo de configuração
         # current_dir = os.path.dirname(__file__)
-        # config_path = os.path.join(current_dir, 'config.txt')
+        # config_path = os.path.join(current_dir, '../config.txt')
 
         # # Ler URL de configuração
         # url = ler_url(config_path)
