@@ -4,6 +4,7 @@ import utils
 import os
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+import requests
 
 # Função para ler a URL de configuração do MongoDB
 def ler_url(config_file):
