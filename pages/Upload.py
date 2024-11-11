@@ -8,7 +8,8 @@ import utils
 # Configurações da página
 st.set_page_config(page_title='Analise Evasao Escolar', layout='wide')
 
-lista_municipios = [""] + utils.carrega_municipios()
+lista_estados = utils.carrega_estados()
+lista_estados_siglas = [""] + [estado["sigla"] for estado in utils.carrega_estados()]
 
 with st.container():
     col1, col2 = st.columns([1, 12])
@@ -62,9 +63,22 @@ with st.container():
     st.write('33. Carga-Horária Obrigatória Pendente')
     st.write('34. Registro do ENADE')
 
+    # Seleciona o estado
+    estado_selecionado = st.selectbox(
+        'Selecione o estado de origem da instituição:',
+        lista_estados_siglas
+    )
+
+    # Encontra o ID do estado selecionado com base na sigla
+    estado_selecionado = next((estado for estado in lista_estados if estado["sigla"] == estado_selecionado), None)
+    estado_id = estado_selecionado["id"] if estado_selecionado else None
+
+    # Carrega os municípios do estado selecionado se houver um ID válido
+    lista_municipios = utils.carrega_municipios_por_estado(estado_id) if estado_id else []
+
     cidade = st.selectbox(
-    'Além disso, tambem é necessario selecionar a cidade de origem da instituição: ',
-    lista_municipios,
+        'Além disso, também é necessário selecionar a cidade de origem da instituição:',
+        lista_municipios,
     )
     
 
