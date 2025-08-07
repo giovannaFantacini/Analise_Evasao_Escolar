@@ -12,8 +12,8 @@ def ler_url(config_file):
         url = file.readline().strip()
     return url
 
-DATABASE_NAME = 'Historico'
-COLLECTION_NAME = 'HistoricoSuap'
+DATABASE_NAME = 'BaseSuap'
+COLLECTION_NAME = 'BaseTcc'
 
 # Função para carregar dados do MongoDB
 @st.cache_data
