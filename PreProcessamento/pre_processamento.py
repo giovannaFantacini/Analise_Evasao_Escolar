@@ -15,9 +15,6 @@ features = [
 
 def treat_file(df, cidade_origem):
     
-    # Remove as linhas com a descrição de curso específica
-    df = df.drop(df[(df['Modalidade'] == 'FIC' )| (df['Modalidade'] == 'Proeja FIC Fundamental')].index)
-
     df = df[features]
 
     df['Modalidade'] = df['Modalidade'].str.split('/').str[0]
